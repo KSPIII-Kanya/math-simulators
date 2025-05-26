@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8" />
+  <title>செவ்வகம் மற்றும் சதுரத்தின் சுற்றளவு மற்றும் பரப்பளவு</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    header {
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 20px;
+      margin-bottom: 20px;
+    }
+
+    header h1 {
+      font-size: 24px;
+      font-weight: bold;
+      color: #27ae60;
+      margin-bottom: 6px;
+    }
+
+    header p.subtitle {
+      font-size: 16px;
+      color: #555;
+      margin-bottom: 15px;
+    }
+
+    .curriculum {
+      font-size: 16px;
+      color: #777;
+      display: block;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .content {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .simulator-row {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    .story {
+      font-size: 18px;
+      line-height: 1.6;
+      flex: 1;
+      min-width: 300px;
+      background: #ecf0f1;
+      border-left: 4px solid #27ae60;
+      padding: 15px;
+      border-radius: 6px;
+    }
+
+    .simulator {
+      flex: 1;
+      min-width: 250px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    .shape-container {
+      position: relative;
+      min-height: 100px;
+      margin-top: 20px;
+      background: #f1f2f6;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dynamic-shape {
+      position: relative;
+      display: grid;
+      gap: 0;
+      border: 2px solid #2d3436;
+      background-color: transparent;
+      z-index: 1;
+    }
+
+    .grid-cell {
+      border: 1px solid #000; /* 🔟 Black grid lines */
+      box-sizing: border-box;
+      background-color: transparent;
+    }
+
+    /* Floating Label Box */
+    #dimensionLabel {
+      position: absolute;
+      font-size: 12px;
+      font-weight: bold;
+      color: #000;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 4px 8px;
+      border: 1px solid #aaa;
+      border-radius: 4px;
+      pointer-events: none;
+      display: none;
+      z-index: 1000;
+      white-space: nowrap;
+    }
+
+    .info-box {
+      margin-top: 20px;
+      padding: 15px;
+      background: #dcdde1;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 10px 20px;
+      background-color: #ddd;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+
+    .tab.red { background-color: #e74c3c; color: white; }
+    .tab.blue { background-color: #3498db; color: white; }
+    .tab.green { background-color: #2ecc71; color: white; }
+    .tab.purple { background-color: #9b59b6; color: white; }
+
+    .tab.active {
+      background-color: #2d3436;
+      color: white;
+      font-weight: bold;
+    }
+
+    .footer-buttons {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    button.btn {
+      padding: 10px 20px;
+      background-color: #0984e3;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      margin: 5px;
+      transition: background 0.3s ease;
+    }
+
+    button.btn:hover {
+      background-color: #74b9ff;
+    }
+
+    .reset-btn {
+      background-color: #e74c3c;
+    }
+
+    .reset-btn:hover {
+      background-color: #c0392b;
+    }
+
+    .formulas {
+      display: none;
+    }
+
+    .formulas.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>கன்ய சம்பூர்ணா திட்டம் / கன்யா பெண்கள் கல்வி திட்டம்</h1>
+  <p class="subtitle">இத்திட்டம் டைட்டன்(TITAN) மற்றும் கலிகே(KALIKE) நிறுவனங்களின் பங்களிப்புடன் செயல்படுத்தப்படுகிறது.</p>
+  <div class="curriculum">
+    வகுப்பு 6 | பருவம் 1 | வடிவியல் – சுற்றளவு மற்றும் பரப்பளவு
+  </div>
+</header>
+
+<div class="content">
+
+  <!-- Floating Label -->
+  <div id="dimensionLabel"></div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab red active" onclick="switchTab(this, 'rectPerimeter')">செவ்வகம் – சுற்றளவு</div>
+    <div class="tab blue" onclick="switchTab(this, 'rectArea')">செவ்வகம் – பரப்பளவு</div>
+    <div class="tab green" onclick="switchTab(this, 'squarePerimeter')">சதுரம் – சுற்றளவு</div>
+    <div class="tab purple" onclick="switchTab(this, 'squareArea')">சதுரம் – பரப்பளவு</div>
+  </div>
+
+  <!-- Tab 1: Rectangle Perimeter -->
+  <div class="formulas active" id="rectPerimeter">
+    <div class="simulator-row" style="display:flex;">
+      <!-- Story -->
+      <div class="story">
+        <strong>🎯 கதை: "சிவா ஒரு செவ்வக வடிவ தோட்டத்திற்கு வேலி போட வேண்டும்"</strong><br><br>
+        சிவாவிற்கு அவரது தோட்டத்தின் சுற்றளவை கணக்கிட வேண்டும்.<br>
+        - செவ்வகத்தின் நீளம் (`l`) = 10 மீ<br>
+        - செவ்வகத்தின் அகலம் (`b`) = 5 மீ<br><br>
+        🔍 அவர் புரிந்து கொள்ள வேண்டியது:<br>
+        - வேலி போட வேண்டிய மொத்த நீளம் ➜ சுற்றளவு<br>
+        - சுற்றளவு = 2 × (நீளம் + அகலம்)
+      </div>
+
+      <!-- Simulator -->
+      <div class="simulator">
+        <div class="section">
+          <label>📏 நீளம் (l): <span id="valueL_RectPeri">10</span></label>
+          <input type="range" min="1" max="20" value="10" id="lengthPerimeter" oninput="updateRectPerimeter()">
+        </div>
+        <div class="section">
+          <label>📐 அகலம் (b): <span id="valueB_RectPeri">5</span></label>
+          <input type="range" min="1" max="20" value="5" id="breadthPerimeter" oninput="updateRectPerimeter()">
+        </div>
+        <div class="section shape-container">
+          <div class="dynamic-shape" id="rectPerimeterBox"></div>
+        </div>
+        <div class="section info-box" id="rectPerimeterText">
+          சுற்றளவு = 2 × (${document.getElementById("lengthPerimeter")?.value || 10} + ${document.getElementById("breadthPerimeter")?.value || 5}) = <strong>30 மீ</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 2: Rectangle Area -->
+  <div class="formulas" id="rectArea">
+    <div class="simulator-row" style="display:flex;">
+      <!-- Story -->
+      <div class="story">
+        <strong>🎯 கதை: "தீபா தன் தோட்டத்தில் செவ்வக வடிவ நிலத்திற்கு உரம் வாங்க வேண்டும்"</strong><br><br>
+        தீபாவுக்கு அவர் தோட்டத்தின் பரப்பளவு தெரிய வேண்டும்.<br>
+        - நீளம் (`l`) = 10 மீ<br>
+        - அகலம் (`b`) = 5 மீ<br><br>
+        🔍 அவள் புரிந்து கொள்ள வேண்டியது:<br>
+        - ஒரு சதுர மீட்டருக்கு ஒரு கொள்ளளவு உரம்<br>
+        - மொத்த உரம் = பரப்பளவு = `l × b`
+      </div>
+
+      <!-- Simulator -->
+      <div class="simulator">
+        <div class="section">
+          <label>📏 நீளம் (l): <span id="valueL_RectArea">10</span></label>
+          <input type="range" min="1" max="20" value="10" id="lengthArea" oninput="updateRectArea()">
+        </div>
+        <div class="section">
+          <label>📐 அகலம் (b): <span id="valueB_RectArea">5</span></label>
+          <input type="range" min="1" max="20" value="5" id="breadthArea" oninput="updateRectArea()">
+        </div>
+        <div class="section shape-container">
+          <div class="dynamic-shape" id="rectAreaBox"></div>
+        </div>
+        <div class="section info-box" id="rectAreaText">
+          பரப்பளவு = நீளம் × அகலம் = 10 × 5 = <strong>50 மீ²</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 3: Square Perimeter -->
+  <div class="formulas" id="squarePerimeter">
+    <div class="simulator-row" style="display:flex;">
+      <!-- Story -->
+      <div class="story">
+        <strong>🎯 கதை: "மோகன் ஒரு சதுர வடிவ கண்ணாடி வாங்க வேண்டும்"</strong><br><br>
+        மோகன் ஒரு சதுர கண்ணாடிக்கு சட்டம் செய்ய வேண்டும்.<br>
+        - பக்கம் (`a`) = 5 செ.மீ<br><br>
+        🔍 அவர் புரிந்து கொள்ள வேண்டியது:<br>
+        - சட்டத்தின் மொத்த நீளம் ➜ சுற்றளவு<br>
+        - சதுரத்தின் சுற்றளவு = 4 × பக்கம்
+      </div>
+
+      <!-- Simulator -->
+      <div class="simulator">
+        <div class="section">
+          <label>🟦 பக்கம் (a): <span id="valueA_SquarePeri">5</span></label>
+          <input type="range" min="1" max="20" value="5" id="sidePerimeter" oninput="updateSquarePerimeter()">
+        </div>
+        <div class="section shape-container">
+          <div class="dynamic-shape" id="squarePerimeterBox"></div>
+        </div>
+        <div class="section info-box" id="squarePerimeterText">
+          சுற்றளவு = 4 × பக்கம் = 4 × 5 = <strong>20 செ.மீ</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 4: Square Area -->
+  <div class="formulas" id="squareArea">
+    <div class="simulator-row" style="display:flex;">
+      <!-- Story -->
+      <div class="story">
+        <strong>🎯 கதை: "செல்வி சதுர வடிவ தரைக்கு ஒரு பாயை வாங்க வேண்டும்"</strong><br><br>
+        செல்விக்கு சதுர வடிவ தரையின் பரப்பளவு தெரிய வேண்டும்.<br>
+        - பக்கம் (`a`) = 5 மீ<br><br>
+        🔍 அவள் புரிந்து கொள்ள வேண்டியது:<br>
+        - தரையின் பரப்பளவு = பக்கம் × பக்கம்<br>
+        - எத்தனை சதுர மீட்டர் பாய் வாங்க வேண்டும்?
+      </div>
+
+      <!-- Simulator -->
+      <div class="simulator">
+        <div class="section">
+          <label>🟦 பக்கம் (a): <span id="valueA_SquareArea">5</span></label>
+          <input type="range" min="1" max="20" value="5" id="sideArea" oninput="updateSquareArea()">
+        </div>
+        <div class="section shape-container">
+          <div class="dynamic-shape" id="squareAreaBox"></div>
+        </div>
+        <div class="section info-box" id="squareAreaText">
+          பரப்பளவு = பக்கம் × பக்கம் = 5 × 5 = <strong>25 மீ²</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reset Button -->
+  <div class="footer-buttons">
+    <button class="btn reset-btn" onclick="resetAll()">மீண்டும் தொடங்குக</button>
+  </div>
+</div>
+
+<script>
+  const dimensionLabel = document.getElementById("dimensionLabel");
+
+  function setupHover(shapeId, getDimensions) {
+    const shape = document.getElementById(shapeId);
+    if (!shape) return;
+
+    shape.addEventListener("mousemove", (e) => {
+      const rect = shape.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const { l, b } = getDimensions();
+
+      const threshold = 10;
+
+      // For rectangle: show l or b near edges
+      if (l !== b) {
+        if ((y < threshold || y > rect.height - threshold) && x > threshold && x < rect.width - threshold) {
+          dimensionLabel.textContent = `நீளம் (l) = ${Math.max(l, b)}`;
+          dimensionLabel.style.left = `${e.pageX + 10}px`;
+          dimensionLabel.style.top = `${e.pageY + 10}px`;
+          dimensionLabel.style.display = "block";
+        } else if ((x < threshold || x > rect.width - threshold) && y > threshold && y < rect.height - threshold) {
+          dimensionLabel.textContent = `அகலம் (b) = ${Math.min(l, b)}`;
+          dimensionLabel.style.left = `${e.pageX + 10}px`;
+          dimensionLabel.style.top = `${e.pageY + 10}px`;
+          dimensionLabel.style.display = "block";
+        } else {
+          dimensionLabel.style.display = "none";
+        }
+      }
+      // For square: show side (a) near any edge
+      else {
+        if (
+          x < threshold ||
+          y < threshold ||
+          x > rect.width - threshold ||
+          y > rect.height - threshold
+        ) {
+          dimensionLabel.textContent = `பக்கம் (a) = ${l}`;
+          dimensionLabel.style.left = `${e.pageX + 10}px`;
+          dimensionLabel.style.top = `${e.pageY + 10}px`;
+          dimensionLabel.style.display = "block";
+        } else {
+          dimensionLabel.style.display = "none";
+        }
+      }
+    });
+
+    shape.addEventListener("mouseleave", () => {
+      dimensionLabel.style.display = "none";
+    });
+  }
+
+  function updateRectPerimeter() {
+    const l = parseInt(document.getElementById("lengthPerimeter").value) || 1;
+    const b = parseInt(document.getElementById("breadthPerimeter").value) || 1;
+    document.getElementById("valueL_RectPeri").textContent = l;
+    document.getElementById("valueB_RectPeri").textContent = b;
+
+    const rect = document.getElementById("rectPerimeterBox");
+    rect.style.width = `${l * 20}px`;
+    rect.style.height = `${b * 20}px`;
+    rect.style.background = "#0984e3";
+    rect.innerHTML = "";
+
+    document.getElementById("rectPerimeterText").innerHTML = `
+      சுற்றளவு = 2 × (${l} + ${b}) = <strong>${2 * (l + b)}</strong> <strong>மீ</strong>`;
+
+    setupHover("rectPerimeterBox", () => ({ l, b }));
+  }
+
+  function updateRectArea() {
+    const l = parseInt(document.getElementById("lengthArea").value) || 1;
+    const b = parseInt(document.getElementById("breadthArea").value) || 1;
+    document.getElementById("valueL_RectArea").textContent = l;
+    document.getElementById("valueB_RectArea").textContent = b;
+
+    const rect = document.getElementById("rectAreaBox");
+    rect.style.gridTemplateColumns = `repeat(${l}, 20px)`;
+    rect.style.gridTemplateRows = `repeat(${b}, 20px)`;
+    rect.innerHTML = "";
+    for (let i = 0; i < l * b; i++) {
+      const cell = document.createElement("div");
+      cell.className = "grid-cell";
+      rect.appendChild(cell);
+    }
+
+    document.getElementById("rectAreaText").innerHTML = `
+      பரப்பளவு = ${l} × ${b} = <strong>${l * b}</strong> <strong>மீ²</strong>`;
+
+    setupHover("rectAreaBox", () => ({ l, b }));
+  }
+
+  function updateSquarePerimeter() {
+    const a = parseInt(document.getElementById("sidePerimeter").value) || 1;
+    document.getElementById("valueA_SquarePeri").textContent = a;
+
+    const square = document.getElementById("squarePerimeterBox");
+    square.style.width = `${a * 20}px`;
+    square.style.height = `${a * 20}px`;
+    square.style.background = "#2ecc71";
+    square.innerHTML = "";
+
+    document.getElementById("squarePerimeterText").innerHTML = `
+      சுற்றளவு = 4 × ${a} = <strong>${4 * a}</strong> <strong>செ.மீ</strong>`;
+
+    setupHover("squarePerimeterBox", () => ({ l: a, b: a }));
+  }
+
+  function updateSquareArea() {
+    const a = parseInt(document.getElementById("sideArea").value) || 1;
+    document.getElementById("valueA_SquareArea").textContent = a;
+
+    const square = document.getElementById("squareAreaBox");
+    square.style.gridTemplateColumns = `repeat(${a}, 20px)`;
+    square.style.gridTemplateRows = `repeat(${a}, 20px)`;
+    square.innerHTML = "";
+    for (let i = 0; i < a * a; i++) {
+      const cell = document.createElement("div");
+      cell.className = "grid-cell";
+      square.appendChild(cell);
+    }
+
+    document.getElementById("squareAreaText").innerHTML = `
+      பரப்பளவு = ${a} × ${a} = <strong>${a * a}</strong> <strong>மீ²</strong>`;
+
+    setupHover("squareAreaBox", () => ({ l: a, b: a }));
+  }
+
+  function switchTab(tabElement, tabId) {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".formulas").forEach(f => f.style.display = "none");
+
+    tabElement.classList.add("active");
+    document.getElementById(tabId).style.display = "block";
+  }
+
+  function resetAll() {
+    document.getElementById("lengthPerimeter").value = "10";
+    document.getElementById("breadthPerimeter").value = "5";
+    document.getElementById("lengthArea").value = "10";
+    document.getElementById("breadthArea").value = "5";
+    document.getElementById("sidePerimeter").value = "5";
+    document.getElementById("sideArea").value = "5";
+
+    updateRectPerimeter();
+    updateRectArea();
+    updateSquarePerimeter();
+    updateSquareArea();
+  }
+
+  window.onload = () => {
+    updateRectPerimeter();
+    updateRectArea();
+    updateSquarePerimeter();
+    updateSquareArea();
+  };
+</script>
+</body>
+</html>
